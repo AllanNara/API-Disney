@@ -1,25 +1,23 @@
 const { DataTypes } = require('sequelize');
-// Exportamos una funcion que define el modelo
-// Luego le injectamos la conexion a sequelize.
+
 module.exports = (sequelize) => {
-  // defino el modelo
-  sequelize.define('character', {
+  sequelize.define('movieOrShow', {
     image: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    name: {
+    title: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    age: {
-      type: DataTypes.INTEGER,
+    released: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
     },
-    weigth: {
+    rating: {
       type: DataTypes.INTEGER,
-    },
-    history: {
-      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 1,
     },
   }, {
     timestamps: false
