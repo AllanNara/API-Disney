@@ -1,17 +1,47 @@
 const { Router } = require('express');
-const { Character, MovieOrShow } = require('../db')
+const { Character, Movie, Op } = require('../db');
 
 const router = Router();
 
-// FALTANTES
-// GET /characters?name=nombre
-// GET /characters?age=edad
-// GET /characters?movies=idMovie
 router.get("/", async (req, res, next) => {
+    const { name, age, weigth, movies } = req.query;
+    if(age && isNaN(parseInt(age))) return res.status(400).send('Query "Age" not valid')
+    if(weigth && isNaN(parseInt(weigth))) return res.status(400).send('Query "Weigth" not valid')
+
     try {
-        const allCharacters = await Character.findAll({
-            attributes: ['image', 'name']
-        });
+        const options =
+        {
+            attributes: ['image', 'name'],
+            where: {}   
+        }
+        //QUERY PARAMETERS
+        if(name) {
+            Object.assign(options.where, {name: {[Op.iLike]: name }})
+        };
+        if(age) {
+            Object.assign(options.where, {age: age})
+        };
+        if(weigth) {
+            Object.assign(options.where, {weigth: weigth})
+        };
+        if(movies) {
+            Object.assign(options, {include: [
+                {
+                    model: Movie,
+                    where: { id: movies }
+                }   
+            ]})
+        };
+
+        //IF NOT EXIST QUERY PARAMS
+        if(!Object.keys(options.where).length) delete options.where;
+        
+        const allCharacters = await Character.findAll(options);
+
+        //VERIFY IF DATABASE IS EMPTY
+        if(!Object.keys(allCharacters).length) {
+            return res.json({data: 'no data available'})
+        };
         res.json(allCharacters)
     } catch (error) {
         next(error)
@@ -19,19 +49,17 @@ router.get("/", async (req, res, next) => {
 });
 
 router.post("/", async (req, res, next) => {
-    const { image, name, age, weight, history } = req.body;
+    const { image, name, age, weigth, history } = req.body;
 
-    if (!image || !name || !age || !weight || !history) {
+    if (!image || !name || !age || !weigth || !history) {
         return res.status(422).send("Missing parameters")
     } else if(
         typeof image !== 'string' ||
         typeof name !== 'string' ||
         typeof history !== 'string' ||
         typeof age !== 'number' ||
-        typeof weight !== 'number'
-    ) {
-        return res.status(400).send("Invalid parameters")
-    };
+        typeof weigth !== 'number'
+    ) return res.status(400).send("Invalid parameters");
 
     try {
         const newCharacter = await Character.create(req.body)
@@ -44,7 +72,7 @@ router.post("/", async (req, res, next) => {
 router.get("/:idCharacter", async(req, res, next) => {
     const { idCharacter } = req.params;
     try {
-        const character = await Character.findByPk(idCharacter, { include: [MovieOrShow] });
+        const character = await Character.findByPk(idCharacter, { include: [Movie] });
         if(!character) return res.status(404).send('Character not found or ID invalid')
         res.json(character)
     } catch (error) {
@@ -54,21 +82,20 @@ router.get("/:idCharacter", async(req, res, next) => {
 
 router.put("/:idCharacter", async(req, res, next) => {
     const { idCharacter } = req.params;
-    const { image, name, age, weight, history } = req.body;
+    const { image, name, age, weigth, history } = req.body;
     if(
-        (typeof image === 'string' ||
-        typeof image === 'undefined') ||
-        (typeof name === 'string' ||
-        typeof name === 'undefined') ||
-        (typeof history === 'string' ||
-        typeof history === 'undefined') ||
-        (typeof age === 'number' ||
-        typeof age === 'undefined') ||
-        (typeof weight === 'number' ||
-        typeof weight === 'undefined')
-    ) {
-        return res.status(400).send("Invalid parameters")
-    };
+        (typeof image !== 'string' ||
+        typeof image !== 'undefined') ||
+        (typeof name !== 'string' ||
+        typeof name !== 'undefined') ||
+        (typeof history !== 'string' ||
+        typeof history !== 'undefined') ||
+        (typeof age !== 'number' ||
+        typeof age !== 'undefined') ||
+        (typeof weigth !== 'number' ||
+        typeof weigth !== 'undefined')
+    ) return res.status(400).send("Invalid parameters");
+
     try {
         const character = await Character.findByPk(idCharacter);
         if(!character) return res.status(404).send('Character not found or ID invalid')

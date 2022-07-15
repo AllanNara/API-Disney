@@ -5,12 +5,14 @@ module.exports = (sequelize) => {
   // defino el modelo
   sequelize.define('character', {
     image: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
+      unique: true
     },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     age: {
       type: DataTypes.INTEGER,
@@ -20,6 +22,8 @@ module.exports = (sequelize) => {
     },
     history: {
       type: DataTypes.TEXT,
+      allowNull: false,
+      unique: true
     },
   }, {
     timestamps: false
