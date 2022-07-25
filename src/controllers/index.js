@@ -26,7 +26,7 @@ function association(array, entity, model) {
 
 async function addGenres() {
     try {
-        const allGenres = ['Fantasy',  'Adventure', 'Musical', 'Romance', 'Comedy', 'Animation', 'Action', 'Drama']
+        const allGenres = ['fantasy',  'adventure', 'musical', 'romance', 'comedy', 'animation', 'action', 'drama']
         const promiseGenres = allGenres.map(elem => Genre.create({ name: elem }));
         await Promise.all(promiseGenres);
         console.log('Base de datos cargada')
